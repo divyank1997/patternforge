@@ -1,0 +1,27 @@
+{
+  "name": "@patternforge/ai-service",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint src",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@patternforge/shared-types": "*",
+    "fastify": "^4.27.0",
+    "@fastify/cors": "^9.0.0",
+    "@fastify/jwt": "^8.0.0",
+    "@anthropic-ai/sdk": "^0.24.0",
+    "zod": "^3.23.0",
+    "pino": "^9.1.0"
+  },
+  "devDependencies": {
+    "@patternforge/shared-config": "*",
+    "@types/node": "^20.12.0",
+    "typescript": "^5.4.5",
+    "tsx": "^4.10.0"
+  }
+}

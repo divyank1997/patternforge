@@ -1,0 +1,12 @@
+{
+  "name": "@patternforge/shared-config",
+  "version": "0.0.1",
+  "private": true,
+  "exports": {
+    "./tsconfig/base": "./tsconfig.base.json",
+    "./tsconfig/react": "./tsconfig.react.json",
+    "./tsconfig/node": "./tsconfig.node.json",
+    "./eslint/base": "./eslint.base.js",
+    "./prettier": "./prettier.config.js"
+  }
+}
