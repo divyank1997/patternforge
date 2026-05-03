@@ -2,9 +2,11 @@
 
 import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { api, saveTokens } from '../../lib/api';
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [form, setForm] = useState({ email: '', username: '', displayName: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,7 +21,7 @@ export default function RegisterPage() {
     try {
       const { user, tokens } = await api.register(form);
       saveTokens(tokens, user);
-      window.location.href = '/dashboard';
+      router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {

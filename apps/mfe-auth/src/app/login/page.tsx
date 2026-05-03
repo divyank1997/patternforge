@@ -2,9 +2,11 @@
 
 import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { api, saveTokens } from '../../lib/api';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -17,9 +19,9 @@ export default function LoginPage() {
     try {
       const { user, tokens } = await api.login({ email, password });
       saveTokens(tokens, user);
-      window.location.href = '/dashboard';
+      router.push('/dashboard');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError(err instanceof Error ? err.message : 'Login failed. Check your credentials.');
     } finally {
       setLoading(false);
     }
