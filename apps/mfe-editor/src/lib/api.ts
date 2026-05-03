@@ -1,9 +1,8 @@
 import type { PatternParameters } from './store';
 
-const AI_URL = process.env['NEXT_PUBLIC_AI_SERVICE_URL'] ?? 'http://localhost:4004';
+const AI_URL = import.meta.env.VITE_AI_SERVICE_URL ?? 'http://localhost:4004';
 
 function getToken(): string | null {
-  if (typeof window === 'undefined') return null;
   return localStorage.getItem('accessToken');
 }
 

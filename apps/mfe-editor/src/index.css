@@ -3,7 +3,4 @@
 @tailwind utilities;
 
 * { box-sizing: border-box; }
-
-input[type='range'] {
-  @apply w-full accent-violet-500;
-}
+input[type='range'] { @apply w-full accent-violet-500; }

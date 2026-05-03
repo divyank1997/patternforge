@@ -1,14 +1,9 @@
-'use client';
-
-import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useEditorStore, type PatternStyle } from '../lib/store';
 import { generatePattern, refinePattern } from '../lib/api';
 
-// Canvas must be client-only (no SSR — WebGL not available server-side)
-const PatternCanvas = dynamic(
-  () => import('./PatternCanvas').then((m) => m.PatternCanvas),
-  { ssr: false, loading: () => <div className="w-full h-full flex items-center justify-center text-zinc-500">Loading 3D engine...</div> },
+const PatternCanvas = lazy(() =>
+  import('./PatternCanvas').then((m) => ({ default: m.PatternCanvas }))
 );
 
 const STYLES: PatternStyle[] = ['geometric', 'organic', 'fractal', 'noise', 'parametric'];
@@ -53,21 +48,18 @@ export function EditorPage() {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden">
+    <div className="flex h-screen w-screen overflow-hidden bg-zinc-950">
       {/* LEFT PANEL */}
       <aside className="w-80 shrink-0 flex flex-col border-r border-zinc-800 bg-zinc-950 overflow-y-auto">
-        {/* Header */}
         <div className="px-4 py-4 border-b border-zinc-800">
           <h1 className="text-lg font-bold text-violet-400">PatternForge</h1>
           <p className="text-xs text-zinc-500 mt-0.5">AI-Powered 3D Editor</p>
         </div>
 
-        {/* Tabs */}
         <div className="flex border-b border-zinc-800">
           {(['ai', 'manual'] as const).map((t) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
+              key={t} onClick={() => setTab(t)}
               className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
                 tab === t ? 'text-violet-400 border-b-2 border-violet-500' : 'text-zinc-500 hover:text-zinc-300'
               }`}
@@ -79,17 +71,15 @@ export function EditorPage() {
 
         <div className="flex-1 px-4 py-4 space-y-4">
           {tab === 'ai' ? (
-            /* AI TAB */
             <>
               <div>
                 <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Describe your pattern</label>
                 <textarea
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
+                  value={prompt} onChange={(e) => setPrompt(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter' && e.metaKey) handleGenerate(); }}
                   rows={4}
-                  placeholder="e.g. A golden fractal snowflake with deep blue accents, symmetrical and intricate..."
-                  className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm placeholder:text-zinc-600 focus:border-violet-500 focus:outline-none resize-none"
+                  placeholder="e.g. A golden fractal snowflake with deep blue accents..."
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-violet-500 focus:outline-none resize-none"
                 />
                 <p className="text-xs text-zinc-600 mt-1">⌘ + Enter to generate</p>
               </div>
@@ -100,9 +90,8 @@ export function EditorPage() {
 
               <div className="flex gap-2">
                 <button
-                  onClick={handleGenerate}
-                  disabled={isGenerating || !prompt.trim()}
-                  className="flex-1 rounded-lg bg-violet-600 py-2.5 text-sm font-medium hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  onClick={handleGenerate} disabled={isGenerating || !prompt.trim()}
+                  className="flex-1 rounded-lg bg-violet-600 py-2.5 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   {isGenerating ? (
                     <span className="flex items-center justify-center gap-2">
@@ -112,13 +101,10 @@ export function EditorPage() {
                   ) : '✦ Generate'}
                 </button>
                 <button
-                  onClick={handleRefine}
-                  disabled={isGenerating || !prompt.trim()}
-                  className="rounded-lg border border-zinc-700 px-3 py-2.5 text-sm hover:bg-zinc-800 disabled:opacity-40 transition-colors"
+                  onClick={handleRefine} disabled={isGenerating || !prompt.trim()}
                   title="Refine current pattern"
-                >
-                  ↺
-                </button>
+                  className="rounded-lg border border-zinc-700 px-3 py-2.5 text-sm text-white hover:bg-zinc-800 disabled:opacity-40 transition-colors"
+                >↺</button>
               </div>
 
               {explanation && (
@@ -127,42 +113,31 @@ export function EditorPage() {
                 </div>
               )}
 
-              <button
-                onClick={randomize}
-                className="w-full rounded-lg border border-zinc-700 py-2 text-sm text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
-              >
+              <button onClick={randomize} className="w-full rounded-lg border border-zinc-700 py-2 text-sm text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors">
                 ⟳ Randomize seed
               </button>
             </>
           ) : (
-            /* MANUAL TAB */
             <>
-              {/* Style */}
               <div>
                 <label className="text-xs font-medium text-zinc-400 mb-2 block">Style</label>
                 <div className="grid grid-cols-3 gap-1">
                   {STYLES.map((s) => (
                     <button
-                      key={s}
-                      onClick={() => setParameters({ style: s })}
+                      key={s} onClick={() => setParameters({ style: s })}
                       className={`rounded-md py-1.5 text-xs font-medium capitalize transition-colors ${
-                        parameters.style === s
-                          ? 'bg-violet-600 text-white'
-                          : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                        parameters.style === s ? 'bg-violet-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
                       }`}
-                    >
-                      {s}
-                    </button>
+                    >{s}</button>
                   ))}
                 </div>
               </div>
 
-              {/* Sliders */}
               {[
                 { label: 'Complexity', key: 'complexity', min: 0, max: 1, step: 0.01 },
-                { label: 'Scale', key: 'scale', min: 0.5, max: 6, step: 0.1 },
-                { label: 'Rotation', key: 'rotation', min: 0, max: 360, step: 1 },
-                { label: 'Symmetry', key: 'symmetry', min: 1, max: 12, step: 1 },
+                { label: 'Scale',      key: 'scale',      min: 0.5, max: 6, step: 0.1 },
+                { label: 'Rotation',   key: 'rotation',   min: 0, max: 360, step: 1 },
+                { label: 'Symmetry',   key: 'symmetry',   min: 1, max: 12, step: 1 },
               ].map(({ label, key, min, max, step }) => (
                 <div key={key}>
                   <div className="flex justify-between mb-1">
@@ -179,14 +154,13 @@ export function EditorPage() {
                 </div>
               ))}
 
-              {/* Custom params */}
               <div className="pt-2 border-t border-zinc-800">
                 <label className="text-xs font-medium text-zinc-400 mb-3 block">Material</label>
                 {[
-                  { label: 'Speed', key: 'speed', min: 0, max: 2, step: 0.01 },
-                  { label: 'Roughness', key: 'roughness', min: 0, max: 1, step: 0.01 },
-                  { label: 'Metalness', key: 'metalness', min: 0, max: 1, step: 0.01 },
-                  { label: 'Glow', key: 'emissiveIntensity', min: 0, max: 2, step: 0.01 },
+                  { label: 'Speed',     key: 'speed',             min: 0, max: 2,  step: 0.01 },
+                  { label: 'Roughness', key: 'roughness',         min: 0, max: 1,  step: 0.01 },
+                  { label: 'Metalness', key: 'metalness',         min: 0, max: 1,  step: 0.01 },
+                  { label: 'Glow',      key: 'emissiveIntensity', min: 0, max: 2,  step: 0.01 },
                 ].map(({ label, key, min, max, step }) => (
                   <div key={key} className="mb-3">
                     <div className="flex justify-between mb-1">
@@ -203,17 +177,13 @@ export function EditorPage() {
                   </div>
                 ))}
                 <label className="flex items-center gap-2 text-xs text-zinc-400 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={parameters.customParams.wireframe}
+                  <input type="checkbox" checked={parameters.customParams.wireframe}
                     onChange={(e) => setCustomParams({ wireframe: e.target.checked })}
-                    className="accent-violet-500"
-                  />
+                    className="accent-violet-500" />
                   Wireframe mode
                 </label>
               </div>
 
-              {/* Colors */}
               <div className="pt-2 border-t border-zinc-800">
                 <label className="text-xs font-medium text-zinc-400 mb-2 block">Colors</label>
                 {(['primary', 'secondary', 'accent', 'background'] as const).map((c) => (
@@ -221,12 +191,9 @@ export function EditorPage() {
                     <label className="text-xs text-zinc-400 capitalize">{c}</label>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-zinc-600">{parameters.colorPalette[c]}</span>
-                      <input
-                        type="color"
-                        value={parameters.colorPalette[c]}
+                      <input type="color" value={parameters.colorPalette[c]}
                         onChange={(e) => setColorPalette({ [c]: e.target.value })}
-                        className="h-6 w-10 cursor-pointer rounded border-0 bg-transparent p-0"
-                      />
+                        className="h-6 w-10 cursor-pointer rounded border-0 bg-transparent p-0" />
                     </div>
                   </div>
                 ))}
@@ -238,15 +205,18 @@ export function EditorPage() {
 
       {/* 3D CANVAS */}
       <main className="flex-1 relative">
-        <PatternCanvas params={parameters} />
+        <Suspense fallback={
+          <div className="w-full h-full flex items-center justify-center text-zinc-500 text-sm">
+            Loading 3D engine...
+          </div>
+        }>
+          <PatternCanvas params={parameters} />
+        </Suspense>
 
-        {/* Overlay info */}
         <div className="absolute bottom-4 left-4 flex gap-2 text-xs text-zinc-600">
           <span className="rounded bg-black/40 px-2 py-1">Scroll to zoom</span>
           <span className="rounded bg-black/40 px-2 py-1">Drag to orbit</span>
         </div>
-
-        {/* Style badge */}
         <div className="absolute top-4 right-4">
           <span className="rounded-full bg-black/50 px-3 py-1 text-xs font-medium capitalize text-violet-400 backdrop-blur">
             {parameters.style}

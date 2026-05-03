@@ -1,17 +1,7 @@
-const API_URL = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4001';
+const API_URL = import.meta.env.VITE_AUTH_SERVICE_URL ?? 'http://localhost:4001';
 
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-}
-
-export interface User {
-  id: string;
-  email: string;
-  username: string;
-  displayName: string;
-}
+export interface AuthTokens { accessToken: string; refreshToken: string; expiresIn: number }
+export interface User { id: string; email: string; username: string; displayName: string }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
@@ -26,10 +16,8 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 export const api = {
   register: (body: { email: string; username: string; password: string; displayName: string }) =>
     request<{ user: User; tokens: AuthTokens }>('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
-
   login: (body: { email: string; password: string }) =>
     request<{ user: User; tokens: AuthTokens }>('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
-
   logout: (refreshToken: string) =>
     request<null>('/auth/logout', { method: 'POST', body: JSON.stringify({ refreshToken }) }),
 };
